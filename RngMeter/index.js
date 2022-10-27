@@ -50,6 +50,7 @@ register("chat", (dung_type, floor) => {
     }
 }).setCriteria("${}${dung_type} Catacombs - ${floor}");
 register("chat", (score, rank) => {
+    if(!config.config_display) return;
     if(is_in_floor){
         if(rank == "(S)"){
             data.score += Math.trunc(score*.7);
@@ -87,6 +88,7 @@ register("dragged", (dx, dy, x, y) => {
     data.save();
 });
 register("renderOverlay", () => {
+    if(!config.config_display) return;
     if(data.score == 0 || data.selected_rng == null) return;
     const short_number = (num) => {
         if(num == undefined) return;
