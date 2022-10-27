@@ -45,7 +45,7 @@ register("chat", (floor) => {
 let is_in_floor = false;
 register("chat", (dung_type, floor) => {
     let dungeons_mode = config.config_floor <= 6 ?"The" : "Master Mode";
-    if(dung_type.includes(`${dungeons_mode}`) && floor.includes(all_floors_name_full[config.config_floor])){
+    if(dung_type.includes(`${dungeons_mode}`) && floor == all_floors_name_full[config.config_floor]){
         is_in_floor = true;
     }
 }).setCriteria("${}${dung_type} Catacombs - ${floor}");
