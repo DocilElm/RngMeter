@@ -31,10 +31,10 @@ register("chat", (score, rank) => {
     if(!config.config_display) return;
     if(is_in_floor){
         if(rank == "(S)"){
-            data.dungeon_score += Math.trunc(score*.7);
+            data.score += Math.trunc(score*.7)/2;
             data.save();
         }else if(rank == "(S+)"){
-            data.dungeon_score += parseInt(score);
+            data.score += parseInt(score)/2;
             data.save();
         }
     }
