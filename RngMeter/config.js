@@ -34,16 +34,32 @@ class Settings {
     })
     config_display = false
     @SelectorProperty({
+        name: "Type",
+        description: "Displays The Selected Type Of §dRNGMeter",
+        category: "General",
+        subcategory: "General",
+        options: ["Dungeons","Slayers"]
+    })
+    config_type = 0;
+    @SelectorProperty({
         name: "Floor",
-        description: "Displays The Selected Floor's Score",
+        description: "Displays The Selected Floor's Progress",
         category: "General",
         subcategory: "General",
         options: ["F1","F2","F3","F4","F5","F6","F7","M1","M2","M3","M4","M5","M6","M7"]
     })
     config_floor = 0;
     @SelectorProperty({
+        name: "Slayer",
+        description: "Displays The Selected Slayer's Progress",
+        category: "General",
+        subcategory: "General",
+        options: ["Revenant Horror","Tarantula Broodfather","Sven Packmaster","Voidgloom Seraph","Inferno Demonlord"]
+    })
+    config_slayer = 0;
+    @SelectorProperty({
         name: "Style",
-        description: "Set the style of the §dRNGMeter §rtext",
+        description: "Set The Style Of The §dRNGMeter §rDisplay",
         category: "General",
         subcategory: "General",
         options: ["DocilElm", "eatplastic"]
