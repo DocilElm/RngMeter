@@ -27,14 +27,15 @@ register("chat", (dung_type, floor) => {
         is_in_floor = true;
     }
 }).setCriteria("${}${dung_type} Catacombs - ${floor}");
+register("chat", () => is_in_floor = false).setCriteria("${*}${*} Catacombs - ${*} Stats");
 register("chat", (score, rank) => {
     if(!config.config_display) return;
     if(is_in_floor){
         if(rank == "(S)"){
-            data.score += Math.trunc(score*.7)/2;
+            data.dungeon_score += Math.trunc(score*.7);
             data.save();
         }else if(rank == "(S+)"){
-            data.score += parseInt(score)/2;
+            data.dungeon_score += parseInt(score);
             data.save();
         }
     }
