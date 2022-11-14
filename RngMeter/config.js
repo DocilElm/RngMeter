@@ -41,6 +41,34 @@ class Settings {
         options: ["Dungeons","Slayers"]
     })
     config_type = 0;
+    @SwitchProperty({
+        name: "Display All Floors",
+        description: "Displays All Floors, if disabled only displays selected floor",
+        category: "General",
+        subcategory: "General"
+    })
+    config_display_all = false;
+    @SwitchProperty({
+        name: "Display MM Floors in Display All Floors",
+        description: "Displays Master Mode Floors. Only works if Display All Floors is enabled",
+        category: "General",
+        subcategory: "General"
+    })
+    config_display_mm = true;
+    @SwitchProperty({
+        name: "Display Normal Floors in Display All Floors",
+        description: "Displays Normal Floors. Only works if Display All Floors is enabled",
+        category: "General",
+        subcategory: "General"
+    })
+    config_display_normal = true;
+    @SwitchProperty({
+        name: "Auto Detect Floor",
+        description: "Automatically Detects Floor And Displays It, if disabled only displays selected floor",
+        category: "General",
+        subcategory: "General"
+    })
+    config_auto_detect_floor = true;
     @SelectorProperty({
         name: "Floor",
         description: "Displays The Selected Floor's Progress",
