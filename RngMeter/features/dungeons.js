@@ -23,24 +23,21 @@ register("step", () => {
         } else {
             current_floor = null;
         }
-    } catch(error) {console.log(error);}
+    } catch(error) {}
 }).setFps(1)
 
 register("chat", (floor, rng) => {
-    console.log("set" + floor + " " + rng)
     data.dungeons_rng[all_floors_name.indexOf(floor)] = rng;
     data.save();
 }).setCriteria("You set your Catacombs (${floor}) RNG Meter to drop ${rng}!");
 
 register("chat", (floor) => {
-    console.log(floor + " reset")
     data.dungeons_rng[all_floors_name.indexOf(floor)] = null;
     data.save();
 }).setCriteria("You reset your selected drop for your Catacombs (${floor}) RNG Meter!");
 
 register("chat", () => {
     should_add = false;
-    console.log("should_add: " + should_add)
 }).setCriteria("${*} Catacombs - ${*} Stats");
 
 register("worldLoad", () => {
