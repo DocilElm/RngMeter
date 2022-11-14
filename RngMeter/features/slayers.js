@@ -8,6 +8,7 @@ let slayer_type = null;
 register("chat", (slayer_name) => {
     for(let i=0; i<slayer_short_names.length; i++) {
         if(slayer_name.includes(slayer_short_names[i])) {
+            if(config.config_auto_detect_slayer) {config.config_slayer = i}
             slayer_type = i;
             break;
         }

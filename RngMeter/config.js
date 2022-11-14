@@ -85,6 +85,13 @@ class Settings {
         options: ["Revenant Horror","Tarantula Broodfather","Sven Packmaster","Voidgloom Seraph","Inferno Demonlord"]
     })
     config_slayer = 0;
+    @SwitchProperty({
+        name: "Auto Detect Slayer Type",
+        description: "Automatically Detects Slayer Type And Displays It, if disabled only displays selected slayer",
+        category: "General",
+        subcategory: "General"
+    })
+    config_auto_detect_slayer = true;
     @SelectorProperty({
         name: "Style",
         description: "Set The Style Of The §dRNGMeter §rDisplay",
