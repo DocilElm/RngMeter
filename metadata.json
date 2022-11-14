@@ -1,0 +1,8 @@
+{
+    "name": "RngMeter",
+    "author": "DocilElm",
+    "description": "§dDisplays Your RNG Meter",
+    "entry": "index.js",
+    "version": "0.0.7",
+    "requires": ["Vigilance", "PogData"]
+}
