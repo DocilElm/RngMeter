@@ -13,11 +13,13 @@ register("chat", (slayer_name) => {
             break;
         }
     }
-}).setCriteria("   ${slayer_name} Slayer LVL ${*} - ${*}!");
+}).setCriteria(/\s+(\w+) Slayer LVL \d - .+!/)
+
 register("chat", (slayer_name) => {
     data.slayer_rng[slayer_names.indexOf(slayer_name)] = "";
     data.save();
-}).setCriteria("You reset your selected drop for your ${slayer_name} RNG Meter!");
+}).setCriteria(/You reset your selected drop for your (?!Catacombs).+ RNG Meter!/);
+
 register("chat", (xp) => {
     let xp_gained = parseInt(xp.replace(",", ""))
     data.slayer_score[slayer_type] = xp_gained;
@@ -52,7 +54,7 @@ register("step", () => {
             })
         })
     }
-    else if(slayer_names.some(e => container_name.includes(e))){
+    else if(container_name.includes(slayer_names[config.config_slayer]) || container_name.includes("Slayer")){
         let slayer_index = slayer_names.indexOf(container_name);
         if(slayer_index == -1) return;
         container.getItems().filter(filter => filter !== null).map(e => {
@@ -74,10 +76,7 @@ register("step", () => {
 
 register("renderOverlay", () => {
     if(!config.config_display || config.config_type == 0 || !World.isLoaded()) return;
-    if(data.slayer_score[config.config_slayer] == 0 || data.slayer_rng[config.config_slayer] == "") {
-        Renderer.drawStringWithShadow(`${PREFIX} &fOpen ${slayer_colored_names[config.config_slayer]}&f RNG Menu!`, data.x, data.y);
-        return;
-    }
+
     if(abc.isOpen()) {
         Renderer.drawStringWithShadow("Click anywhere to move!", Renderer.screen.getWidth()/2 - Renderer.getStringWidth("Click anywhere to move!")/2, Renderer.screen.getHeight()/2)
     }

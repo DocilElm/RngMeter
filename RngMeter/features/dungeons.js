@@ -9,6 +9,19 @@ let all_floors_name = ["F1","F2","F3","F4","F5","F6","F7","M1","M2","M3","M4","M
 let should_add = null;
 let current_floor = null;
 
+register("chat", () => {
+    new Thread( () => {
+        Thread.sleep(1000);
+        if (data.dungeon_score[config.config_floor] >= dungeons_rng[config.config_floor <= 6 ? "Normal_Mode" : "Master_Mode"][config.config_floor][data.dungeon_rng[config.config_floor]?.removeFormatting() ?? null]) {
+            Client.showTitle("&cRNG Meter Max!", "", 10, 40, 10);
+            for(let i=0; i<5; i++) {
+                World.playSound("mob.horse.donkey.idle", 1, 1)
+                Thread.sleep(500);
+            }
+        }    
+    }).start();
+}).setCriteria(/Your active Potion Effects have been paused and stored. They will be restored when you leave Dungeons! You are not allowed to use existing Potion Effects while in Dungeons./)
+
 register("step", () => {
     if(!World.isLoaded()) return;
     try {
@@ -25,31 +38,20 @@ register("step", () => {
         }
     } catch(error) {}
 }).setFps(1);
+
 register("chat", (floor, event) => {
-    let msg = ChatLib.getChatMessage(event, true);
-    let rng = msg.split("to drop")[1].replace(" ", "").replace("!", "")
-    data.dungeon_rng[all_floors_name.indexOf(floor)] = rng;
+    data.dungeon_rng[all_floors_name.indexOf(floor)] = ChatLib.getChatMessage(event, true).match(/&r&aYou set your &r&dCatacombs \(\w\d\) RNG Meter &r&ato drop (.*)&r&a!&r/)[1];
     data.save();
-}).setCriteria("You set your Catacombs (${floor}) RNG Meter to drop ${*}!");
+}).setCriteria(/You set your Catacombs \((\w\d)\) RNG Meter to drop .*!/);
+
 register("chat", (floor) => {
     data.dungeon_rng[all_floors_name.indexOf(floor)] = "selected. Choose one to start";
     data.save();
-}).setCriteria("You reset your selected drop for your Catacombs (${floor}) RNG Meter!");
-register("chat", () => {
-    new Thread( () => {
-        Thread.sleep(1000);
-        if (data.dungeon_score[config.config_floor] >= dungeons_rng[config.config_floor <= 6 ? "Normal_Mode" : "Master_Mode"][config.config_floor][data.dungeon_rng[config.config_floor]?.removeFormatting() ?? null]) {
-            Client.showTitle("&cRNG Meter Max!", "", 10, 40, 10);
-            for(let i=0; i<5; i++) {
-                World.playSound("random.successful_hit", 1, 1)
-                Thread.sleep(500);
-            }
-        }    
-    }).start();
-}).setCriteria("Your active Potion Effects have been paused and stored. They will be restored when you leave Dungeons! You are not allowed to use existing Potion Effects while in Dungeons.")
+}).setCriteria(/You reset your selected drop for your Catacombs \((\w\d)\) RNG Meter!/);
+
 register("chat", () => {
     should_add = false;
-}).setCriteria("${*} Catacombs - ${*} Stats");
+}).setCriteria(/.+ Catacombs - .+ Stats/);
 
 register("worldLoad", () => {
     should_add = true;
@@ -57,20 +59,22 @@ register("worldLoad", () => {
 
 register("chat", (score, rank) => {
     if(!should_add || !current_floor) return;
-    if(data.dungeon_score[all_floors_name.indexOf(current_floor)]>=dungeons_rng[i <= 6 ? "Normal_Mode" : "Master_Mode"][all_floors_name.indexOf(current_floor)][data.dungeon_rng[all_floors_name.indexOf(current_floor)]]) {
-        data.dungeon_score[all_floors_name.indexOf(current_floor)] = (data.dungeon_score[all_floors_name.indexOf(current_floor)] + Math.trunc(score*(rank=="(S)" ? .7 : rank=="(S+)" ? 1 : 0)))-dungeons_rng[i <= 6 ? "Normal_Mode" : "Master_Mode"][all_floors_name.indexOf(current_floor)][data.dungeon_rng[all_floors_name.indexOf(current_floor)]]
+    if(data.dungeon_score[all_floors_name.indexOf(current_floor)]>=dungeons_rng[config.config_floor <= 6 ? "Normal_Mode" : "Master_Mode"][all_floors_name.indexOf(current_floor)][data.dungeon_rng[all_floors_name.indexOf(current_floor)]]) {
+        data.dungeon_score[all_floors_name.indexOf(current_floor)] = (data.dungeon_score[all_floors_name.indexOf(current_floor)] + Math.trunc(score*(rank=="S" ? .7 : rank=="S+" ? 1 : 0)))-dungeons_rng[i <= 6 ? "Normal_Mode" : "Master_Mode"][all_floors_name.indexOf(current_floor)][data.dungeon_rng[all_floors_name.indexOf(current_floor)]]
     }else {
-        data.dungeon_score[all_floors_name.indexOf(current_floor)] += Math.trunc(score*(rank=="(S)" ? .7 : rank=="(S+)" ? 1 : 0))
+        data.dungeon_score[all_floors_name.indexOf(current_floor)] += Math.trunc(score*(rank=="S" ? .7 : rank=="S+" ? 1 : 0))
     }
     data.save();
-}).setCriteria("${*}Team Score: ${score} ${rank}");
+}).setCriteria(/.+Team Score: (\d+) \((.+)\)/);
+
 register("step", () => {
     if(!World.isLoaded()) return;
     else if(Player.getContainer() !=null && Player.getContainer().getName() == "Catacombs RNG Meter") {
         for(let i=0; i<all_floors.length; i++) {
             let score = Player.getContainer().getStackInSlot(all_floors[i]);
+            if(!score || score == null) continue;
             let lore = score.getLore();
-            if(!score || score == null || lore == null) continue;
+            if(lore == null) continue;
             data.dungeon_score[i] = parseInt(lore[20].split("/")[0].removeFormatting().trim().replace(",",""));
             data.dungeon_rng[i] = lore[17];
         }

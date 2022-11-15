@@ -15,8 +15,6 @@ import {
 class Settings {
     constructor() {
         this.initialize(this);
-        this.addDependency("Display Normal Floors in Display All Floors", "Display All Floors")
-        this.addDependency("Display MM Floors in Display All Floors", "Display Normal Floors in Display All Floors")
     }
     @ButtonProperty({
         name: "Display Location",
@@ -94,13 +92,6 @@ class Settings {
         subcategory: "General"
     })
     config_auto_detect_slayer = true;
-    @SwitchProperty({
-        name: "Alert",
-        description: "Alerts You When Dungeons Meter Is Full",
-        category: "General",
-        subcategory: "General"
-    })
-    config_alert = false
     @SelectorProperty({
         name: "Style",
         description: "Set The Style Of The §dRNGMeter §rDisplay",
