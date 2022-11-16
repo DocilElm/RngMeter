@@ -35,5 +35,5 @@ if(data.dungeon_score.constructor!== Array || data.dungeon_rng.constructor!== Ar
     data.save();
 }
 
-import "./features/dungeons"
-import "./features/slayers"
+import "./features/dungeons";
+import "./features/slayers";

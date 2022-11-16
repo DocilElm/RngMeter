@@ -9,19 +9,6 @@ let all_floors_name = ["F1","F2","F3","F4","F5","F6","F7","M1","M2","M3","M4","M
 let should_add = null;
 let current_floor = null;
 
-register("chat", () => {
-    new Thread( () => {
-        Thread.sleep(1000);
-        if (data.dungeon_score[config.config_floor] >= dungeons_rng[config.config_floor <= 6 ? "Normal_Mode" : "Master_Mode"][config.config_floor][data.dungeon_rng[config.config_floor]?.removeFormatting() ?? null]) {
-            Client.showTitle("&cRNG Meter Max!", "", 10, 40, 10);
-            for(let i=0; i<5; i++) {
-                World.playSound("mob.horse.donkey.idle", 1, 1)
-                Thread.sleep(500);
-            }
-        }    
-    }).start();
-}).setCriteria(/Your active Potion Effects have been paused and stored. They will be restored when you leave Dungeons! You are not allowed to use existing Potion Effects while in Dungeons./)
-
 register("step", () => {
     if(!World.isLoaded()) return;
     try {
@@ -38,20 +25,31 @@ register("step", () => {
         }
     } catch(error) {}
 }).setFps(1);
-
 register("chat", (floor, event) => {
-    data.dungeon_rng[all_floors_name.indexOf(floor)] = ChatLib.getChatMessage(event, true).match(/&r&aYou set your &r&dCatacombs \(\w\d\) RNG Meter &r&ato drop (.*)&r&a!&r/)[1];
+    let msg = ChatLib.getChatMessage(event, true);
+    let rng = msg.split("to drop")[1].replace(" ", "").replace("!", "")
+    data.dungeon_rng[all_floors_name.indexOf(floor)] = rng;
     data.save();
-}).setCriteria(/You set your Catacombs \((\w\d)\) RNG Meter to drop .*!/);
-
+}).setCriteria("You set your Catacombs (${floor}) RNG Meter to drop ${*}!");
 register("chat", (floor) => {
     data.dungeon_rng[all_floors_name.indexOf(floor)] = "selected. Choose one to start";
     data.save();
-}).setCriteria(/You reset your selected drop for your Catacombs \((\w\d)\) RNG Meter!/);
-
+}).setCriteria("You reset your selected drop for your Catacombs (${floor}) RNG Meter!");
+register("chat", () => {
+    new Thread( () => {
+        Thread.sleep(1000);
+        if (data.dungeon_score[config.config_floor] >= dungeons_rng[config.config_floor <= 6 ? "Normal_Mode" : "Master_Mode"][config.config_floor][data.dungeon_rng[config.config_floor]?.removeFormatting() ?? null]) {
+            Client.showTitle("&cRNG Meter Max!", "", 10, 40, 10);
+            for(let i=0; i<5; i++) {
+                World.playSound("random.successful_hit", 1, 1)
+                Thread.sleep(500);
+            }
+        }    
+    }).start();
+}).setCriteria("Your active Potion Effects have been paused and stored. They will be restored when you leave Dungeons! You are not allowed to use existing Potion Effects while in Dungeons.")
 register("chat", () => {
     should_add = false;
-}).setCriteria(/.+ Catacombs - .+ Stats/);
+}).setCriteria("${*} Catacombs - ${*} Stats");
 
 register("worldLoad", () => {
     should_add = true;
@@ -60,21 +58,19 @@ register("worldLoad", () => {
 register("chat", (score, rank) => {
     if(!should_add || !current_floor) return;
     if(data.dungeon_score[all_floors_name.indexOf(current_floor)]>=dungeons_rng[config.config_floor <= 6 ? "Normal_Mode" : "Master_Mode"][all_floors_name.indexOf(current_floor)][data.dungeon_rng[all_floors_name.indexOf(current_floor)]]) {
-        data.dungeon_score[all_floors_name.indexOf(current_floor)] = (data.dungeon_score[all_floors_name.indexOf(current_floor)] + Math.trunc(score*(rank=="S" ? .7 : rank=="S+" ? 1 : 0)))-dungeons_rng[i <= 6 ? "Normal_Mode" : "Master_Mode"][all_floors_name.indexOf(current_floor)][data.dungeon_rng[all_floors_name.indexOf(current_floor)]]
+        data.dungeon_score[all_floors_name.indexOf(current_floor)] = (data.dungeon_score[all_floors_name.indexOf(current_floor)] + Math.trunc(score*(rank=="(S)" ? .7 : rank=="(S+)" ? 1 : 0)))-dungeons_rng[i <= 6 ? "Normal_Mode" : "Master_Mode"][all_floors_name.indexOf(current_floor)][data.dungeon_rng[all_floors_name.indexOf(current_floor)]]
     }else {
-        data.dungeon_score[all_floors_name.indexOf(current_floor)] += Math.trunc(score*(rank=="S" ? .7 : rank=="S+" ? 1 : 0))
+        data.dungeon_score[all_floors_name.indexOf(current_floor)] += Math.trunc(score*(rank=="(S)" ? .7 : rank=="(S+)" ? 1 : 0))
     }
     data.save();
-}).setCriteria(/.+Team Score: (\d+) \((.+)\)/);
-
+}).setCriteria("${*}Team Score: ${score} ${rank}");
 register("step", () => {
     if(!World.isLoaded()) return;
     else if(Player.getContainer() !=null && Player.getContainer().getName() == "Catacombs RNG Meter") {
         for(let i=0; i<all_floors.length; i++) {
             let score = Player.getContainer().getStackInSlot(all_floors[i]);
-            if(!score || score == null) continue;
-            let lore = score.getLore();
-            if(lore == null) continue;
+            let lore = score?.getLore() ?? null;
+            if(!score || score == null || lore == null) continue;
             data.dungeon_score[i] = parseInt(lore[20].split("/")[0].removeFormatting().trim().replace(",",""));
             data.dungeon_rng[i] = lore[17];
         }
@@ -101,14 +97,34 @@ register("renderOverlay", () => {
             let score = data.dungeon_score[i] == null?0 : data.dungeon_score[i];
             let rng = data.dungeon_rng[i].removeFormatting() == "selected. Choose one to start"?`&cNo RNG Selected!` : data.dungeon_rng[i];
             let meter_rng = dungeons_rng[i <= 6 ? "Normal_Mode" : "Master_Mode"][i][data.dungeon_rng[i]?.removeFormatting() ?? null];
-            let txt = config.config_style == 0 ? `${i<=6 ? "&a" : "&c"}${all_floors_name[i]}&f: &f${rng} &7${short_number(score)}&d/&6${short_number(meter_rng)} &7(${((score/meter_rng)*100).toFixed(2)}%)` : `${i<=6 ? "&a" : "&c"}${rng}: &7${short_number(score)}${i<=6 ? "&a" : "&c"}/&7${short_number(meter_rng)} &7(${((score/meter_rng)*100).toFixed(2)}%)`;
+            //style 1
+            let style1_txt = `${i<=6 ? "&a" : "&c"}${all_floors_name[i]}&f: &f${rng} &7${short_number(score)}&d/&6${short_number(meter_rng)} &7(${((score/meter_rng)*100).toFixed(2)}%)`;
+            //style 2
+            let style2_txt = `${i<=6 ? "&a" : "&c"}${rng}: &7${short_number(score)}${i<=6 ? "&a" : "&c"}/&7${short_number(meter_rng)} &7(${((score/meter_rng)*100).toFixed(2)}%)`;
+
+            let txt = config.config_style == 0 ?style1_txt :style2_txt;
             Renderer.drawStringWithShadow(txt, data.x, data.y + ((i-((config.config_display_mm&&!config.config_display_normal) ? 7 : 0))*10));
         }
     } else {
         let score = data.dungeon_score[config.config_floor] == null ?0 : data.dungeon_score[config.config_floor];
         let rng = data.dungeon_rng[config.config_floor].removeFormatting() == "selected. Choose one to start" ?`&cNo RNG Selected!`: data.dungeon_rng[config.config_floor];
         let meter_rng = dungeons_rng[config.config_floor <= 6 ? "Normal_Mode" : "Master_Mode"][config.config_floor][data.dungeon_rng[config.config_floor]?.removeFormatting() ?? null];
-        let txt = config.config_style == 0 ? `${PREFIX}\n${config.config_floor<=6 ? "&a" : "&c"}${all_floors_name[config.config_floor]}&f: &f${rng}\n${config.config_floor<=6 ? "&a" : "&c"}Score&f: ${score >= meter_rng ?"&6":"&7"}${short_number(score)}&d/&6${short_number(meter_rng)} ${score >= meter_rng ?"&6":"&7"}(${((score/meter_rng)*100).toFixed(2) >= 100 ?100:((score/meter_rng)*100).toFixed(2)}%)` : `${config.config_floor<=6 ? "&a" : "&c"}${rng}: ${score >= meter_rng ?"&b":"&7"}${short_number(score)}${config.config_floor<=6 ? "&a" : "&c"}/&b${short_number(meter_rng)} ${score >= meter_rng ?"&b":"&7"}(${((score/meter_rng)*100).toFixed(2) >= 100 ?100:((score/meter_rng)*100).toFixed(2)}%)`;
+        //style 1
+        let style1_color = `${config.config_floor<=6 ? "&a" : "&c"}`;
+        let style1_score_color = `${score >= meter_rng ?"&6":"&7"}`;
+        let style1_percent = ((score/meter_rng)*100).toFixed(2);
+        let style1_rng_progress = `${style1_color}Score&f: ${style1_score_color}${short_number(score)}&d/&6${short_number(meter_rng)} ${style1_score_color}(${style1_percent >= 100 ?100:style1_percent}%)`;
+        let style1_floor = `${style1_color}${all_floors_name[config.config_floor]}`;
+
+        let style1_txt = `${PREFIX}\n${style1_floor}&f: &f${rng}\n${style1_rng_progress}`;
+        //style 2
+        let style2_color = `${config.config_floor<=6 ? "&a" : "&c"}`;
+        let style2_score_color = `${score >= meter_rng ?"&b":"&7"}`;
+        let style2_percent = ((score/meter_rng)*100).toFixed(2);
+
+        let style2_txt = `${style2_color}${rng}: ${style2_score_color}${short_number(score)}${style2_color}/&b${short_number(meter_rng)} ${style2_score_color}(${style2_percent >= 100 ?100:style2_percent}%)`;
+
+        let txt = config.config_style == 0 ?style1_txt :style2_txt;
         Renderer.drawStringWithShadow(txt, data.x, data.y);
     }
 });

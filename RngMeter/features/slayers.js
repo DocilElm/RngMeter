@@ -13,13 +13,11 @@ register("chat", (slayer_name) => {
             break;
         }
     }
-}).setCriteria(/\s+(\w+) Slayer LVL \d - .+!/)
-
+}).setCriteria("   ${slayer_name} Slayer LVL ${*} - ${*}!");
 register("chat", (slayer_name) => {
     data.slayer_rng[slayer_names.indexOf(slayer_name)] = "";
     data.save();
-}).setCriteria(/You reset your selected drop for your (?!Catacombs).+ RNG Meter!/);
-
+}).setCriteria("You reset your selected drop for your ${slayer_name} RNG Meter!");
 register("chat", (xp) => {
     let xp_gained = parseInt(xp.replace(",", ""))
     data.slayer_score[slayer_type] = xp_gained;
@@ -54,7 +52,7 @@ register("step", () => {
             })
         })
     }
-    else if(container_name.includes(slayer_names[config.config_slayer]) || container_name.includes("Slayer")){
+    else if(slayer_names.some(e => container_name.includes(e))){
         let slayer_index = slayer_names.indexOf(container_name);
         if(slayer_index == -1) return;
         container.getItems().filter(filter => filter !== null).map(e => {
@@ -76,7 +74,10 @@ register("step", () => {
 
 register("renderOverlay", () => {
     if(!config.config_display || config.config_type == 0 || !World.isLoaded()) return;
-
+    if(data.slayer_score[config.config_slayer] == 0 || data.slayer_rng[config.config_slayer] == "") {
+        Renderer.drawStringWithShadow(`${PREFIX} &fOpen ${slayer_colored_names[config.config_slayer]}&f RNG Menu!`, data.x, data.y);
+        return;
+    }
     if(abc.isOpen()) {
         Renderer.drawStringWithShadow("Click anywhere to move!", Renderer.screen.getWidth()/2 - Renderer.getStringWidth("Click anywhere to move!")/2, Renderer.screen.getHeight()/2)
     }
@@ -85,8 +86,16 @@ register("renderOverlay", () => {
     let rng = data.slayer_rng[config.config_slayer];
     let slayer_colored_name = slayer_colored_names[config.config_slayer];
     if(score==0 || rng=="") return;
-
     let rng_progress = ((score/slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()])*100).toFixed(2) > 100 ?"100%":`${((score/slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()])*100).toFixed(2)}%`;
-    let txt = config.config_style == 0 ? `${PREFIX}${slayer_colored_name}\n&dRNG: ${rng}\n&dProgress: ${score >= slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()] ?"&6":"&7"}${short_number(score)}&d/&6${short_number(slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()])} ${score >= slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()] ?"&6":"&7"}(${rng_progress})` : `${rng}: ${score >= slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()] ?"&b":"&7"}${short_number(score)}${slayer_colored_names[config.config_slayer].substring(0, 2)}/&b${short_number(slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()])} ${score >= slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()] ?"&b":"&7"}(${rng_progress})`;
+    //style 1
+    let style1_score_color = `${score >= slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()] ?"&6":"&7"}`;
+
+    let style1_txt = `${PREFIX}${slayer_colored_name}\n&dRNG: ${rng}\n&dProgress: ${style1_score_color}${short_number(score)}&d/&6${short_number(slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()])} ${style1_score_color}(${rng_progress})`
+    //style 2
+    let style2_score_color = `${score >= slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()] ?"&b":"&7"}`;
+
+    let style2_txt = `${rng}: ${style2_score_color}${short_number(score)}${slayer_colored_names[config.config_slayer].substring(0, 2)}/&b${short_number(slayers_rng.Slayers[config.config_slayer][rng.removeFormatting()])} ${style2_score_color}(${rng_progress})`;
+
+    let txt = config.config_style == 0 ?style1_txt :style2_txt;
     Renderer.drawStringWithShadow(txt, data.x, data.y);
 });
